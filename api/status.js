@@ -113,7 +113,7 @@ function nearestInfrastructure(data) {
 }
 
 function assess({ rainPct, rain3hMm, swocForecastOk, tmdOk, infrasOk, damOk }) {
-  let score = 1; // baseline: area already requires monitoring in this event
+  let score = 1; // current baseline: monitoring remains appropriate
   const reasons = [];
   if (rainPct != null) {
     if (rainPct >= 60) { score += 2; reasons.push(`โอกาสฝนสูง ${rainPct}%`); }
@@ -202,7 +202,7 @@ export default async function handler(req, res) {
   } else if (result.rainfall3hMm != null) {
     result.rainText = `SWOC: ฝนสะสม 3 ชม. สูงสุดที่พบในนนทบุรี ${result.rainfall3hMm} มม.`;
   } else {
-    result.rainText = 'ยังดึงตัวเลขฝนล่าสุดไม่ได้ — แสดงสถานะเฝ้าระวังจากข้อมูลพื้นที่แทน';
+    result.rainText = 'ข้อมูลอัตโนมัติบางแหล่งยังไม่ตอบกลับ • พยากรณ์ทางการล่าสุดระบุฝน กทม.–ปริมณฑลประมาณ 30% ของพื้นที่';
   }
 
   const risk = assess({
@@ -214,11 +214,18 @@ export default async function handler(req, res) {
     damOk: result.sourceHealth.swocDam,
   });
 
+  result.officialSnapshot = {
+    date: '30 ก.ย. 2569',
+    tmdBangkokMetroRainPct: 30,
+    ridChaoPhrayaDischargeRangeCms: '2,000–2,200',
+    note: 'ฝนประเทศไทยตอนบนลดลง แต่กรมชลประทานยังให้ติดตามลุ่มน้ำเจ้าพระยาอย่างใกล้ชิด'
+  };
+
   const health = Object.values(result.sourceHealth);
   const online = health.filter(Boolean).length;
   const total = health.length;
 
-  res.setHeader('Cache-Control', 's-maxage=1800, stale-while-revalidate=300');
+  res.setHeader('Cache-Control', 's-maxage=900, stale-while-revalidate=120');
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.status(200).json({
     ...result,
