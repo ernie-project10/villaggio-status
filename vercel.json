@@ -1,7 +1,4 @@
 {
-  "functions": {
-    "api/status.js": { "maxDuration": 10 }
-  },
   "headers": [
     {
       "source": "/api/status",

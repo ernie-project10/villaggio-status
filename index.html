@@ -374,6 +374,8 @@
     <div style="font-size:12px;opacity:.78;font-weight:700">LIVE STATUS</div>
     <div id="liveStatus" style="font-size:22px;font-weight:800;margin-top:2px">กำลังอัปเดต…</div>
     <div id="liveRain" style="font-size:14px;margin-top:4px">กำลังตรวจสอบข้อมูลฝนล่าสุด</div>
+    <div id="liveWater" style="font-size:13px;margin-top:5px;opacity:.9">กำลังเชื่อมข้อมูล SWOC / กรมชลประทาน</div>
+    <div id="liveApi" style="font-size:12px;margin-top:5px;opacity:.8">กำลังตรวจสอบ API…</div>
     <div id="liveTime" style="font-size:12px;opacity:.75;margin-top:6px">รีเฟรชข้อมูลทุก 30 นาที</div>
   </div>
 </div>
@@ -557,8 +559,15 @@ async function refreshLive(){
     const box=document.getElementById('liveStatus');
     const rain=document.getElementById('liveRain');
     const time=document.getElementById('liveTime');
+    const water=document.getElementById('liveWater');
+    const api=document.getElementById('liveApi');
     if(box){ box.textContent=d.statusText; box.dataset.level=d.status; }
     if(rain){ rain.textContent=d.rainText || 'กำลังตรวจสอบ'; }
+    if(water){
+      if(d.nearestInfrastructure?.distanceKm!=null) water.textContent='SWOC: พบสถานี/อาคารชลศาสตร์ใกล้โครงการประมาณ '+d.nearestInfrastructure.distanceKm+' กม.';
+      else water.textContent='SWOC: กำลังใช้ข้อมูลฝน/น้ำระดับจังหวัดและระบบเจ้าพระยา';
+    }
+    if(api){ api.textContent='API: '+(d.apiSummary || 'ไม่ทราบสถานะ'); }
     if(time){
       const dt=new Date(d.updatedAt);
       time.textContent='อัปเดตล่าสุด '+dt.toLocaleString('th-TH',{timeZone:'Asia/Bangkok',dateStyle:'medium',timeStyle:'short'})+' • รีเฟรชทุก 30 นาที';
