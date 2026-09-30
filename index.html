@@ -321,6 +321,35 @@
       color: var(--muted);
     }
 
+
+    .live-panel {
+      background:#0f2d4d;
+      color:#fff;
+      border-radius:18px;
+      padding:14px 16px;
+      box-shadow:0 8px 24px rgba(15,45,77,.18);
+    }
+    .live-title { font-size:12px; opacity:.78; font-weight:700; letter-spacing:.04em; }
+    .live-main { font-size:22px; font-weight:800; margin-top:2px; }
+    .live-row { display:flex; gap:10px; align-items:flex-start; padding:11px 0; border-top:1px solid rgba(255,255,255,.16); }
+    .live-row:first-of-type { margin-top:8px; }
+    .source-badge {
+      flex:0 0 auto;
+      min-width:58px;
+      text-align:center;
+      padding:5px 8px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:800;
+      letter-spacing:.02em;
+    }
+    .source-badge.tmd { background:#d8e9ff; color:#154a92; }
+    .source-badge.swoc { background:#bdf3d7; color:#0f6a43; }
+    .source-badge.api { background:#ffd778; color:#7c4700; }
+    .source-badge.offline { background:#ffc7c7; color:#8e2d2d; }
+    .live-copy { font-size:13px; line-height:1.45; opacity:.96; }
+    .live-time { font-size:12px; opacity:.72; margin-top:8px; }
+
     @media (min-width: 700px) {
       .wrap { padding: 24px 20px 48px; }
       .status-row { grid-template-columns: 1.2fr .8fr; }
@@ -370,13 +399,26 @@
 </head>
 <body>
 <div style="max-width:900px;margin:12px auto 0;padding:0 14px">
-  <div style="background:#0f2d4d;color:#fff;border-radius:18px;padding:14px 16px;box-shadow:0 8px 24px rgba(15,45,77,.18)">
-    <div style="font-size:12px;opacity:.78;font-weight:700">LIVE STATUS</div>
-    <div id="liveStatus" style="font-size:22px;font-weight:800;margin-top:2px">กำลังอัปเดต…</div>
-    <div id="liveRain" style="font-size:14px;margin-top:4px">กำลังตรวจสอบข้อมูลฝนล่าสุด</div>
-    <div id="liveWater" style="font-size:13px;margin-top:5px;opacity:.9">กำลังเชื่อมข้อมูล SWOC / กรมชลประทาน</div>
-    <div id="liveApi" style="font-size:12px;margin-top:5px;opacity:.8">กำลังตรวจสอบ API…</div>
-    <div id="liveTime" style="font-size:12px;opacity:.75;margin-top:6px">รีเฟรชข้อมูลทุก 30 นาที</div>
+  <div class="live-panel">
+    <div class="live-title">LIVE STATUS</div>
+    <div id="liveStatus" class="live-main">กำลังอัปเดต…</div>
+
+    <div class="live-row">
+      <span id="badgeTmd" class="source-badge tmd">TMD</span>
+      <div id="liveRain" class="live-copy">กำลังตรวจสอบข้อมูลฝนล่าสุด</div>
+    </div>
+
+    <div class="live-row">
+      <span id="badgeSwoc" class="source-badge swoc">SWOC</span>
+      <div id="liveWater" class="live-copy">กำลังเชื่อมข้อมูลน้ำและชลประทาน</div>
+    </div>
+
+    <div class="live-row">
+      <span id="badgeApi" class="source-badge api">API</span>
+      <div id="liveApi" class="live-copy">กำลังตรวจสอบการเชื่อมต่อ…</div>
+    </div>
+
+    <div id="liveTime" class="live-time">รีเฟรชข้อมูลทุก 30 นาที</div>
   </div>
 </div>
 
@@ -386,7 +428,6 @@
       <div class="right">อัปเดต 30 ก.ย. 2569</div>
     </div>
     <section class="hero">
-      <div class="kicker">📱 เปิดดูบนมือถือได้ • Responsive HTML</div>
       <h1>สรุปสถานการณ์น้ำ<br>Villaggio ปิ่นเกล้า–ศาลายา</h1>
       <p class="subtitle">โซนศาลากลาง อ.บางกรวย จ.นนทบุรี • สรุปให้อ่านง่ายสำหรับส่งต่อครอบครัว</p>
 
@@ -561,13 +602,37 @@ async function refreshLive(){
     const time=document.getElementById('liveTime');
     const water=document.getElementById('liveWater');
     const api=document.getElementById('liveApi');
+    const badgeTmd=document.getElementById('badgeTmd');
+    const badgeSwoc=document.getElementById('badgeSwoc');
+    const badgeApi=document.getElementById('badgeApi');
     if(box){ box.textContent=d.statusText; box.dataset.level=d.status; }
-    if(rain){ rain.textContent=d.rainText || 'กำลังตรวจสอบ'; }
-    if(water){
-      if(d.nearestInfrastructure?.distanceKm!=null) water.textContent='SWOC: พบสถานี/อาคารชลศาสตร์ใกล้โครงการประมาณ '+d.nearestInfrastructure.distanceKm+' กม.';
-      else water.textContent='SWOC: กำลังใช้ข้อมูลฝน/น้ำระดับจังหวัดและระบบเจ้าพระยา';
+
+    const sh=d.sourceHealth || {};
+    const tmdOk=!!sh.tmdDaily;
+    const swocOk=!!(sh.swocForecast || sh.swocRain3h || sh.swocInfrastructure || sh.swocDam);
+    const anyOk=Object.values(sh).some(Boolean);
+
+    if(rain){ rain.textContent=d.rainText || 'ยังดึงข้อมูลฝนล่าสุดไม่ได้'; }
+    if(badgeTmd){
+      badgeTmd.className='source-badge '+(tmdOk?'tmd':'offline');
+      badgeTmd.textContent=tmdOk?'TMD ✓':'TMD ×';
     }
-    if(api){ api.textContent='API: '+(d.apiSummary || 'ไม่ทราบสถานะ'); }
+
+    if(water){
+      if(d.nearestInfrastructure?.distanceKm!=null) water.textContent='พบสถานี/อาคารชลศาสตร์ใกล้โครงการประมาณ '+d.nearestInfrastructure.distanceKm+' กม.';
+      else if(swocOk) water.textContent='กำลังใช้ข้อมูลฝน/น้ำระดับจังหวัดและระบบเจ้าพระยา';
+      else water.textContent='ยังเชื่อมข้อมูล SWOC ไม่สำเร็จ';
+    }
+    if(badgeSwoc){
+      badgeSwoc.className='source-badge '+(swocOk?'swoc':'offline');
+      badgeSwoc.textContent=swocOk?'SWOC ✓':'SWOC ×';
+    }
+
+    if(api){ api.textContent=d.apiSummary || 'ไม่ทราบสถานะการเชื่อมต่อ'; }
+    if(badgeApi){
+      badgeApi.className='source-badge '+(anyOk?'api':'offline');
+      badgeApi.textContent=anyOk?'API ✓':'API ×';
+    }
     if(time){
       const dt=new Date(d.updatedAt);
       time.textContent='อัปเดตล่าสุด '+dt.toLocaleString('th-TH',{timeZone:'Asia/Bangkok',dateStyle:'medium',timeStyle:'short'})+' • รีเฟรชทุก 30 นาที';
