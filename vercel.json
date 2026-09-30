@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "api/status.js": { "maxDuration": 10 }
+  },
+  "headers": [
+    {
+      "source": "/api/status",
+      "headers": [
+        { "key": "Cache-Control", "value": "s-maxage=1800, stale-while-revalidate=300" }
+      ]
+    }
+  ]
+}

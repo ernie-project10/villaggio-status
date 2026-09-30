@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Villaggio ปิ่นเกล้า–ศาลายา | Flood Watch Dashboard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,400..700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap');
+    :root {
+      --bg: #f3f8ff;
+      --card: #ffffff;
+      --text: #10233f;
+      --muted: #5d6e87;
+      --blue: #1f5fbf;
+      --blue-2: #eaf3ff;
+      --orange: #ef8a1f;
+      --orange-2: #fff1dd;
+      --green: #1e9f67;
+      --green-2: #e9f8f1;
+      --red: #d84444;
+      --red-2: #ffe9e9;
+      --shadow: 0 10px 28px rgba(15, 35, 70, 0.08);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Google Sans Flex", "Noto Sans Thai", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #edf5ff 0%, #f7fbff 100%);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 18px 14px 40px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #2668cf 0%, #3d86f2 58%, #75aef7 100%);
+      color: #fff;
+      border-radius: 28px;
+      padding: 22px 18px 18px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero:before,
+    .hero:after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,.12);
+      pointer-events: none;
+    }
+    .hero:before { width: 160px; height: 160px; right: -30px; top: -40px; }
+    .hero:after { width: 120px; height: 120px; left: -20px; bottom: -40px; }
+
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      background: rgba(255,255,255,.18);
+      padding: 8px 12px;
+      border-radius: 999px;
+      backdrop-filter: blur(4px);
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 6vw, 44px);
+      line-height: 1.08;
+      letter-spacing: -0.025em;
+    }
+
+    .subtitle {
+      margin: 10px 0 0;
+      font-size: 15px;
+      opacity: .95;
+    }
+
+    .status-row {
+      margin-top: 16px;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: 1fr;
+    }
+
+    .status-box {
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 22px;
+      padding: 14px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .pill.orange { background: #ffd778; color: #7c4700; }
+    .pill.green { background: #bdf3d7; color: #0f6a43; }
+    .pill.red { background: #ffc0c0; color: #912a2a; }
+    .pill.blue { background: #d8e9ff; color: #154a92; }
+
+    .hero-grid {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+      grid-template-columns: 1fr;
+    }
+
+    .hero-card {
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 20px;
+      padding: 14px;
+    }
+
+    .hero-card .label {
+      font-size: 12px;
+      opacity: .82;
+      font-weight: 700;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+
+    .hero-card .value {
+      font-size: 16px;
+      font-weight: 800;
+      line-height: 1.3;
+    }
+
+    .section {
+      margin-top: 16px;
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px 16px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 14px;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+
+    .badge-num {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: inline-grid;
+      place-items: center;
+      background: var(--blue);
+      color: #fff;
+      font-size: 18px;
+      font-weight: 800;
+      flex: 0 0 auto;
+    }
+
+    .summary-box {
+      background: linear-gradient(135deg, var(--orange-2), #fff8ef);
+      border: 1px solid #ffe3b4;
+      border-radius: 20px;
+      padding: 16px;
+    }
+
+    .summary-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .summary-head strong {
+      font-size: 22px;
+      line-height: 1.2;
+    }
+
+    ul.checks {
+      padding-left: 20px;
+      margin: 10px 0 0;
+    }
+
+    ul.checks li { margin: 8px 0; }
+
+    .grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: 1fr;
+    }
+
+    .card {
+      background: #f8fbff;
+      border: 1px solid #e5eefc;
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .card h3 {
+      margin: 0 0 6px;
+      font-size: 17px;
+      line-height: 1.3;
+    }
+
+    .card p { margin: 0; color: var(--muted); }
+
+    .timeline {
+      display: grid;
+      gap: 12px;
+    }
+
+    .timeline-item {
+      border-radius: 18px;
+      padding: 14px;
+      border: 1px solid #e4ecf8;
+      background: #fbfdff;
+    }
+    .timeline-item.orange { background: #fff7e7; border-color: #ffe2a5; }
+    .timeline-item.blue { background: #eef6ff; border-color: #d8e9ff; }
+    .timeline-item.green { background: #eefaf4; border-color: #d7f0e2; }
+
+    .date-label {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .timeline-item h3 {
+      margin: 0 0 6px;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+    .timeline-item p { margin: 0; color: var(--muted); }
+
+    .actions {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .action {
+      background: #f8fbff;
+      border: 1px solid #e5eefc;
+      border-radius: 18px;
+      padding: 14px;
+      min-height: 116px;
+    }
+
+    .icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: inline-grid;
+      place-items: center;
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
+    .icon.green { background: var(--green-2); }
+    .icon.orange { background: var(--orange-2); }
+    .icon.blue { background: var(--blue-2); }
+    .icon.red { background: var(--red-2); }
+
+    .note {
+      background: linear-gradient(135deg, #fff7d8 0%, #fff0b8 100%);
+      border: 1px solid #f7dc86;
+      border-radius: 20px;
+      padding: 16px;
+      font-weight: 700;
+    }
+
+    .meta {
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+
+    .sources {
+      display: grid;
+      gap: 10px;
+    }
+
+    .source-item {
+      background: #f8fbff;
+      border: 1px solid #e5eefc;
+      border-radius: 16px;
+      padding: 12px 14px;
+    }
+    .source-item a {
+      color: var(--blue);
+      text-decoration: none;
+      font-weight: 700;
+      word-break: break-word;
+    }
+    .source-item small {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+    }
+
+    .footer {
+      margin-top: 16px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    @media (min-width: 700px) {
+      .wrap { padding: 24px 20px 48px; }
+      .status-row { grid-template-columns: 1.2fr .8fr; }
+      .hero-grid { grid-template-columns: repeat(3, 1fr); }
+      .grid { grid-template-columns: repeat(3, 1fr); }
+      .timeline { grid-template-columns: repeat(3, 1fr); }
+      .actions { grid-template-columns: repeat(4, 1fr); }
+    }
+  
+    .mobile-status {
+      position: sticky;
+      top: 8px;
+      z-index: 50;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.94);
+      box-shadow: 0 8px 24px rgba(15,35,70,.12);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(31,95,191,.12);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .dot { width:10px; height:10px; border-radius:50%; background:var(--orange); box-shadow:0 0 0 4px rgba(239,138,31,.12); flex:0 0 auto; }
+    .mobile-status .left { display:flex; align-items:center; gap:8px; min-width:0; }
+    .mobile-status .right { color:var(--muted); white-space:nowrap; font-size:12px; }
+    .risk-meter { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:14px; }
+    .risk-step { padding:10px 8px; border-radius:14px; text-align:center; font-size:12px; font-weight:800; }
+    .risk-low { background:#eaf8f1; color:#16764e; }
+    .risk-mid { background:#fff4d6; color:#8a5b00; }
+    .risk-high { background:#ffe5e5; color:#a63636; }
+    .risk-step.active { outline:3px solid rgba(239,138,31,.22); transform:translateY(-1px); }
+    @media (max-width: 420px) {
+      .wrap { padding-left:10px; padding-right:10px; }
+      .hero { border-radius:22px; padding:18px 14px 16px; }
+      .section { border-radius:18px; padding:16px 14px; }
+      h1 { font-size:30px; }
+      .section-title { font-size:20px; }
+      .actions { grid-template-columns:1fr; }
+      .mobile-status .right { display:none; }
+    }
+  </style>
+</head>
+<body>
+<div style="max-width:900px;margin:12px auto 0;padding:0 14px">
+  <div style="background:#0f2d4d;color:#fff;border-radius:18px;padding:14px 16px;box-shadow:0 8px 24px rgba(15,45,77,.18)">
+    <div style="font-size:12px;opacity:.78;font-weight:700">LIVE STATUS</div>
+    <div id="liveStatus" style="font-size:22px;font-weight:800;margin-top:2px">กำลังอัปเดต…</div>
+    <div id="liveRain" style="font-size:14px;margin-top:4px">กำลังตรวจสอบข้อมูลฝนล่าสุด</div>
+    <div id="liveTime" style="font-size:12px;opacity:.75;margin-top:6px">รีเฟรชข้อมูลทุก 30 นาที</div>
+  </div>
+</div>
+
+  <main class="wrap">
+    <div class="mobile-status">
+      <div class="left"><span class="dot"></span><span>Villaggio ปิ่นเกล้า–ศาลายา: เฝ้าระวังค่อนข้างสูง</span></div>
+      <div class="right">อัปเดต 30 ก.ย. 2569</div>
+    </div>
+    <section class="hero">
+      <div class="kicker">📱 เปิดดูบนมือถือได้ • Responsive HTML</div>
+      <h1>สรุปสถานการณ์น้ำ<br>Villaggio ปิ่นเกล้า–ศาลายา</h1>
+      <p class="subtitle">โซนศาลากลาง อ.บางกรวย จ.นนทบุรี • สรุปให้อ่านง่ายสำหรับส่งต่อครอบครัว</p>
+
+      <div class="status-row">
+        <div class="status-box">
+          <div class="summary-head">
+            <span class="pill orange">⚠️ เฝ้าระวังค่อนข้างสูง</span>
+            <span class="pill blue">อัปเดตล่าสุด: 30 ก.ย. 2569</span>
+          </div>
+          <div style="font-size:16px; line-height:1.65;">
+            ตอนนี้ <strong>ยังไม่พบข้อมูลสาธารณะยืนยันว่าน้ำเข้าภายในหมู่บ้านโดยตรง</strong><br>
+            แต่พื้นที่ <strong>ต.ศาลากลาง</strong> ยังอยู่ในโซนที่ต้องเฝ้าระวังต่อ
+            เพราะมีทั้ง <strong>ความเสี่ยงจากฝน</strong> และ <strong>ระดับน้ำในระบบเจ้าพระยา</strong>
+          </div>
+        </div>
+
+        <div class="status-box">
+          <div class="hero-card" style="background:transparent;border:none;padding:0;">
+            <div class="label">ข้อสรุปสั้นที่สุด</div>
+            <div class="value">ยังไม่ยืนยันว่าน้ำเข้าหมู่บ้าน<br>แต่ยังไม่ควรนิ่งนอนใจ</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-grid">
+        <div class="hero-card">
+          <div class="label">พื้นที่โครงการ</div>
+          <div class="value">ต.ศาลากลาง<br>อ.บางกรวย นนทบุรี</div>
+        </div>
+        <div class="hero-card">
+          <div class="label">ฝนวันนี้</div>
+          <div class="value">กทม.–ปริมณฑล<br>มีฝนฟ้าคะนอง ~30% ของพื้นที่</div>
+        </div>
+        <div class="hero-card">
+          <div class="label">ภาพรวมความเสี่ยง</div>
+          <div class="value">เสี่ยงปานกลาง–ค่อนข้างสูง<br>จนถึงอย่างน้อย 4–5 ต.ค.</div>
+        </div>
+      </div>
+    
+      <div class="risk-meter" aria-label="ระดับความเสี่ยง">
+        <div class="risk-step risk-low">ต่ำ</div>
+        <div class="risk-step risk-mid active">ปานกลาง–สูง</div>
+        <div class="risk-step risk-high">สูงมาก</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title"><span class="badge-num">1</span>สรุปตอนนี้</h2>
+      <div class="summary-box">
+        <div class="summary-head">
+          <span class="pill orange">สเตตัสล่าสุด</span>
+          <strong>เฝ้าระวังค่อนข้างสูง</strong>
+        </div>
+        <ul class="checks">
+          <li>ยังไม่พบรายงานสาธารณะยืนยันว่า <strong>น้ำเข้าหมู่บ้าน Villaggio</strong> โดยตรง</li>
+          <li>แต่ <strong>ต.ศาลากลาง</strong> อยู่ในพื้นที่ที่ถูกประกาศเป็นเขตประสบอุทกภัยแล้ว</li>
+          <li>ความเสี่ยงตอนนี้มาจากทั้ง <strong>ฝนที่ยังเกิดได้</strong> และ <strong>ระดับน้ำท้ายน้ำเจ้าพระยา</strong></li>
+          <li>ถ้าฝนตกซ้ำต่อเนื่อง หรือมีการระบายน้ำเพิ่ม ความเสี่ยงจะขยับขึ้นเร็ว</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title"><span class="badge-num">2</span>ทำไมยังต้องระวัง</h2>
+      <div class="grid">
+        <article class="card">
+          <h3>📍 ทำเลอยู่ในโซนเฝ้าระวัง</h3>
+          <p>Villaggio ปิ่นเกล้า–ศาลายา อยู่ในพื้นที่ ต.ศาลากลาง อ.บางกรวย ซึ่งถูกระบุว่าได้รับผลกระทบจากอุทกภัยในรอบล่าสุด</p>
+        </article>
+        <article class="card">
+          <h3>🌧️ ฝนลดลงแต่ยังมีได้</h3>
+          <p>พยากรณ์วันนี้ระบุว่า กทม.–ปริมณฑลยังมีโอกาสเกิดฝนฟ้าคะนอง แม้ภาพรวมจะเริ่มลดลงจากวันก่อนหน้า</p>
+        </article>
+        <article class="card">
+          <h3>🌊 ระบบน้ำยังต้องตามต่อ</h3>
+          <p>ช่วงปลายเดือนยังมีการติดตามระดับน้ำและการระบายน้ำในระบบเจ้าพระยา ทำให้พื้นที่ท้ายน้ำอย่างนนทบุรียังวางใจไม่ได้</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title"><span class="badge-num">3</span>ช่วงที่ต้องจับตา</h2>
+      <div class="timeline">
+        <article class="timeline-item orange">
+          <div class="date-label">30 ก.ย. – 1 ต.ค.</div>
+          <h3>ระวัง</h3>
+          <p>ยังควรเฝ้าดูฝนในพื้นที่ และสังเกตระดับน้ำบริเวณทางเข้าโครงการ จุดระบายน้ำ และถนนรอบหมู่บ้าน</p>
+        </article>
+        <article class="timeline-item blue">
+          <div class="date-label">2 – 4 ต.ค.</div>
+          <h3>ติดตามต่อ</h3>
+          <p>ดูว่าฝนมีรอบใหม่หรือไม่ และหน่วยงานมีการปรับการระบายน้ำเพิ่มหรือเปล่า หากมี ความเสี่ยงจะยังคงอยู่</p>
+        </article>
+        <article class="timeline-item green">
+          <div class="date-label">หลัง 5 ต.ค.</div>
+          <h3>ลุ้นให้ดีขึ้น</h3>
+          <p>หากฝนไม่หนักต่อเนื่อง สถานการณ์มีโอกาสค่อย ๆ คลี่คลาย แต่ยังควรเช็กประกาศล่าสุดก่อนสรุปว่าปลอดภัย</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title"><span class="badge-num">4</span>สิ่งที่ควรทำคืนนี้</h2>
+      <div class="actions">
+        <article class="action">
+          <div class="icon green">🚗</div>
+          <strong>จอดรถในจุดที่สูง</strong>
+          <div class="meta">เลี่ยงจอดจุดต่ำ หรือจุดที่น้ำไหลรวม</div>
+        </article>
+        <article class="action">
+          <div class="icon orange">🔌</div>
+          <strong>ยกปลั๊กพ่วงขึ้นสูง</strong>
+          <div class="meta">รวมถึงของสำคัญที่วางติดพื้น</div>
+        </article>
+        <article class="action">
+          <div class="icon blue">🏠</div>
+          <strong>เช็กหน้าหมู่บ้าน</strong>
+          <div class="meta">ดูทางเข้า จุดระบายน้ำ และถนนหน้าโครงการ</div>
+        </article>
+        <article class="action">
+          <div class="icon red">🧰</div>
+          <strong>เตรียมของจำเป็น</strong>
+          <div class="meta">ไฟฉาย ยา พาวเวอร์แบงก์ และเบอร์ฉุกเฉิน</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title"><span class="badge-num">5</span>ข้อสรุปสุดท้าย</h2>
+      <div class="note">
+        ตอนนี้ <strong>“ยังไม่ยืนยันว่าน้ำเข้าหมู่บ้าน”</strong> แต่สำหรับ Villaggio ปิ่นเกล้า–ศาลายา<br>
+        <strong>ยังควรเฝ้าระวังต่ออย่างน้อยถึงช่วง 4–5 ต.ค.</strong><br><br>
+        หากมี <strong>ฝนตกหนักต่อเนื่อง</strong> หรือ <strong>การระบายน้ำเพิ่ม</strong> ให้ยกระดับการเตรียมตัวทันที
+      </div>
+      <div class="meta">หมายเหตุ: หน้านี้เป็นสรุปจากข้อมูลสาธารณะล่าสุดที่ตรวจสอบได้ ณ วันที่จัดทำ ยังไม่ใช่ระบบเซนเซอร์สดภายในหมู่บ้าน</div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title"><span class="badge-num">6</span>แหล่งอ้างอิงที่ใช้</h2>
+      <div class="sources">
+        <div class="source-item">
+          <a href="https://www.tmd.go.th/forecast/daily" target="_blank" rel="noopener">กรมอุตุนิยมวิทยา – พยากรณ์อากาศประจำวัน</a>
+          <small>ใช้ประกอบข้อมูลโอกาสฝนในกรุงเทพฯ และปริมณฑล ณ วันที่ 30 ก.ย. 2569</small>
+        </div>
+        <div class="source-item">
+          <a href="https://www.tmd.go.th/forecast/sevenday" target="_blank" rel="noopener">กรมอุตุนิยมวิทยา – พยากรณ์อากาศ 7 วัน</a>
+          <small>ใช้ดูแนวโน้มฝนช่วง 30 ก.ย. – 4/5 ต.ค. 2569</small>
+        </div>
+        <div class="source-item">
+          <a href="https://rid12.rid.go.th/th/news-activities/105675" target="_blank" rel="noopener">กรมชลประทาน (สำนักงานชลประทานที่ 12) – ติดตามการระบายน้ำ</a>
+          <small>ใช้ประกอบภาพรวมการเฝ้าระวังน้ำในระบบเจ้าพระยาและผลต่อพื้นที่ท้ายน้ำ</small>
+        </div>
+        <div class="source-item">
+          <a href="https://www.thansettakij.com/general-news/670236" target="_blank" rel="noopener">ประกาศพื้นที่ประสบอุทกภัย จ.นนทบุรี (สรุปข่าวอ้างอิงประกาศจังหวัด)</a>
+          <small>ใช้ยืนยันว่าพื้นที่อำเภอบางกรวยและ ต.ศาลากลาง อยู่ในโซนที่ได้รับผลกระทบ</small>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">
+      ไฟล์นี้ออกแบบให้เปิดอ่านง่ายบนมือถือ • สามารถส่งต่อในครอบครัวได้ทันที
+    </div>
+  </main>
+
+<script>
+async function refreshLive(){
+  try{
+    const r=await fetch('/api/status',{cache:'no-store'});
+    const d=await r.json();
+    const box=document.getElementById('liveStatus');
+    const rain=document.getElementById('liveRain');
+    const time=document.getElementById('liveTime');
+    if(box){ box.textContent=d.statusText; box.dataset.level=d.status; }
+    if(rain){ rain.textContent=d.rainText || 'กำลังตรวจสอบ'; }
+    if(time){
+      const dt=new Date(d.updatedAt);
+      time.textContent='อัปเดตล่าสุด '+dt.toLocaleString('th-TH',{timeZone:'Asia/Bangkok',dateStyle:'medium',timeStyle:'short'})+' • รีเฟรชทุก 30 นาที';
+    }
+  }catch(e){}
+}
+refreshLive();
+setInterval(refreshLive, 30*60*1000);
+</script>
+</body>
+</html>
