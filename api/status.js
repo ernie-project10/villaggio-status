@@ -113,7 +113,7 @@ function nearestInfrastructure(data) {
 }
 
 function assess({ rainPct, rain3hMm, swocForecastOk, tmdOk, infrasOk, damOk }) {
-  let score = 1; // current baseline: monitoring remains appropriate
+  let score = 2; // 1 Oct baseline elevated: Chao Phraya discharge increased and Nonthaburi remains under watch
   const reasons = [];
   if (rainPct != null) {
     if (rainPct >= 60) { score += 2; reasons.push(`โอกาสฝนสูง ${rainPct}%`); }
@@ -202,7 +202,7 @@ export default async function handler(req, res) {
   } else if (result.rainfall3hMm != null) {
     result.rainText = `SWOC: ฝนสะสม 3 ชม. สูงสุดที่พบในนนทบุรี ${result.rainfall3hMm} มม.`;
   } else {
-    result.rainText = 'ข้อมูลอัตโนมัติบางแหล่งยังไม่ตอบกลับ • พยากรณ์ทางการล่าสุดระบุฝน กทม.–ปริมณฑลประมาณ 30% ของพื้นที่';
+    result.rainText = 'ข้อมูลอัตโนมัติบางแหล่งยังไม่ตอบกลับ • พยากรณ์ทางการล่าสุดวันที่ 1 ต.ค. ระบุฝน กทม.–ปริมณฑลประมาณ 30% ของพื้นที่';
   }
 
   const risk = assess({
@@ -215,10 +215,10 @@ export default async function handler(req, res) {
   });
 
   result.officialSnapshot = {
-    date: '30 ก.ย. 2569',
+    date: '1 ต.ค. 2569',
     tmdBangkokMetroRainPct: 30,
-    ridChaoPhrayaDischargeRangeCms: '2,000–2,200',
-    note: 'ฝนประเทศไทยตอนบนลดลง แต่กรมชลประทานยังให้ติดตามลุ่มน้ำเจ้าพระยาอย่างใกล้ชิด'
+    ridChaoPhrayaDischargeRangeCms: '2,400 (13:00 น.)',
+    note: 'กทม.–ปริมณฑลมีฝนประมาณ 30% แต่กรมชลประทานปรับการระบายน้ำท้ายเขื่อนเจ้าพระยาเป็น 2,400 ลบ.ม./วินาที และนนทบุรียังต้องเฝ้าระวัง'
   };
 
   const health = Object.values(result.sourceHealth);
@@ -236,6 +236,6 @@ export default async function handler(req, res) {
     note: 'เป็นการประเมินจากข้อมูลสาธารณะของ TMD และ SWOC/RID ไม่ใช่เซนเซอร์ระดับน้ำภายในหมู่บ้าน จึงไม่สามารถยืนยันน้ำหน้าบ้านแบบเรียลไทม์ได้',
     sources: urls,
     updatedAt: fetchedAt.toISOString(),
-    refreshMinutes: 30,
+    refreshMinutes: 15,
   });
 }
